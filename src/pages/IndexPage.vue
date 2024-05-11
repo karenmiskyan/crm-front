@@ -11,7 +11,7 @@
         </div>
         <div class="action-buttons">
           <div class="q-py-md q-gutter-sm">
-            <q-btn @click="bulkExportFiltered" v-if="checkPermission(authStore.roles, 'admin')" label="Export" color="dark" unelevated icon="open_in_new">
+            <q-btn @click="bulkExportFiltered" :loading="exportLoading" v-if="checkPermission(authStore.roles, 'admin')" label="Export" color="dark" unelevated icon="open_in_new">
               <q-tooltip :delay="1000" :offset="[0, 10]">Export</q-tooltip>
             </q-btn>
             <q-btn-group outline>
@@ -77,19 +77,35 @@
                         </div>
 
                         <div>
-                          <div class="flex justify-between">
-                            <span>{{createdAt?.from || ''}} - {{createdAt?.to || ''}}</span>
-                            <q-icon size="sm" style="color: #757575" name="event" class="cursor-pointer">
-                              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                                <q-date range v-model="createdAt" @update:model-value="updateFilter" minimal>
-                                  <div class="row items-center justify-end">
-                                    <q-btn v-close-popup label="Clear" color="primary" @click="clearCreatedAt" flat/>
-                                    <q-btn v-close-popup label="Close" color="primary" flat/>
-                                  </div>
-                                </q-date>
-                              </q-popup-proxy>
-                            </q-icon>
-                          </div>
+                          <q-input v-model="createdAt.from" mask="date" label="Created date from">
+                            <template v-slot:append>
+                              <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                                  <q-date v-model="createdAt.from" @update:model-value="updateFilter()">
+                                    <div class="row items-center justify-end">
+                                      <q-btn v-close-popup label="Close" color="primary" flat/>
+                                    </div>
+                                  </q-date>
+                                </q-popup-proxy>
+                              </q-icon>
+                            </template>
+                          </q-input>
+                        </div>
+
+                        <div>
+                          <q-input v-model="createdAt.to" mask="date" label="Created date to">
+                            <template v-slot:append>
+                              <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                                  <q-date v-model="createdAt.to" @update:model-value="updateFilter()">
+                                    <div class="row items-center justify-end">
+                                      <q-btn v-close-popup label="Close" color="primary" flat/>
+                                    </div>
+                                  </q-date>
+                                </q-popup-proxy>
+                              </q-icon>
+                            </template>
+                          </q-input>
                         </div>
                       </div>
                     </div>
@@ -119,7 +135,7 @@
       </div>
     </div>
     <LeadsTable :filter="filter" @tagFiltered="updateTextSearch" @tableSelected="tableSelected"></LeadsTable>
-    <BulkUpdateDialog :isOpen="isOpenModal" :selectedLeads="selectedLeads" @modal-closed="isOpenModal = false"></BulkUpdateDialog>
+    <BulkUpdateDialog @updated="this.selectedLeads.length = 0" :isOpen="isOpenModal" :selectedLeads="selectedLeads" @modal-closed="isOpenModal = false"></BulkUpdateDialog>
   </q-page>
 </template>
 
@@ -154,6 +170,11 @@ export default {
       this.status = [];
       this.lastContact = '';
       this.textSearch = '';
+      this.createdAt = {
+        from: '',
+        to: ''
+      };
+      this.textSearch = '';
       this.branch = undefined;
 
       this.updateFilter();
@@ -172,9 +193,9 @@ export default {
         filter_created_at_from: this.createdAt?.from || '',
         filter_created_at_to: this.createdAt?.to || ''
       }
-      console.log('this.filter', this.filter)
     },
     async bulkExportFiltered() {
+      this.exportLoading = true;
       const headers = {
         'Content-Type': 'text/csv',
         Authorization: `Bearer ${this.authStore.token}`
@@ -198,6 +219,8 @@ export default {
         // Clean up
         window.URL.revokeObjectURL(url);
         document.body.removeChild(link);
+
+        this.exportLoading = false
       } catch (error) {
         console.error('Failed to download CSV:', error);
       }
@@ -209,6 +232,7 @@ export default {
       api.delete(`/api/bulk-delete?${objectToQueryString({ids: this.selectedLeads.map(item => item.id)})}`, {headers})
         .then(() => {
           this.updateFilter()
+          this.selectedLeads.length = 0;
         })
     },
     clearCreatedAt() {
@@ -295,6 +319,7 @@ export default {
       sourceOptions,
       textSearchDelay,
 
+      exportLoading: ref(false),
       isOpenModal
     }
   }

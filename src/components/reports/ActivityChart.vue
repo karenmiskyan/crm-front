@@ -107,7 +107,6 @@ export default defineComponent({
   },
   methods: {
     updateChart() {
-      console.log('changed')
       const headers = {
         Authorization: `Bearer ${this.authStore.token}`
       }
@@ -119,8 +118,6 @@ export default defineComponent({
           name: 'Count',
           data: response.data.count
         }];
-
-        console.log('123123', response.data.lables)
 
         const donutLabels = [];
         const donutValues = [];
@@ -137,10 +134,10 @@ export default defineComponent({
         this.chartOptions.labels = donutLabels
         this.seriesDonut = donutValues;
 
-        this.$refs.activityChart.chart.render();
-        this.$refs.activityPieChart.chart.render();
-        this.$refs.activityChart.chart.updateOptions(this.options)
-        this.$refs.activityPieChart.chart.updateOptions(this.chartOptions)
+        this.$refs.activityChart?.chart?.render();
+        this.$refs.activityPieChart?.chart?.render();
+        this.$refs.activityChart?.chart?.updateOptions(this.options)
+        this.$refs.activityPieChart?.chart?.updateOptions(this.chartOptions)
       });
     }
   },

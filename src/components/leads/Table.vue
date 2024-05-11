@@ -17,9 +17,17 @@
       v-model:selected="selectedLeads"
       @update:selected="$emit('table-selected', selectedLeads)"
     >
+      <template v-slot:loading>
+        <q-inner-loading style="z-index: 5" showing color="primary" />
+      </template>
       <template v-slot:body-cell-actions="scope">
         <q-td auto-width>
           <q-btn flat round color="dark" icon="remove_red_eye" @click="editLead(scope.row)"/>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-company="scope">
+        <q-td auto-width>
+          <span class="cursor-pointer" @click="editLead(scope.row)">{{scope.row.company}}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-created_by="scope">

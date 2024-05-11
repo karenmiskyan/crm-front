@@ -13,6 +13,7 @@
           full-width
           v-model="company"
           :disable="showForm"
+          :loading="suggestionLoading"
           @update:model-value="getSuggestions"
           label="Company*"
           lazy-rules="ondemand" :rules="[ val => val && val.length > 0 || 'Please type something']"
@@ -21,12 +22,14 @@
         <div class="company-suggestion q-pb-lg full-width">
           <q-list bordered separator>
             <q-item v-bind:key="item" v-for="item of suggestedCompanies" class="list-item">
-              <q-item-section>{{item}}</q-item-section>
+              <q-item-section>{{ item }}</q-item-section>
             </q-item>
           </q-list>
         </div>
         <div class="q-pb-lg justify-end">
-          <q-btn :label="showForm ? 'Update company name' : 'Continue to create company'" :disable="disableContinueButton" @click="continueToCreate" size="md" no-caps type="button" color="dark"/>
+          <q-btn :label="showForm ? 'Update company name' : 'Continue to create company'" :loading="loading"
+                 :disable="disableContinueButton" @click="continueToCreate" size="md" no-caps type="button"
+                 color="dark"/>
         </div>
       </div>
       <div class="q-my-none q-my-none" v-if="showForm">
@@ -205,23 +208,26 @@ export default {
       })
     },
     async getSuggestions(text) {
+      this.suggestionLoading = true;
       const headers = {
         Authorization: `Bearer ${this.authStore.token}`
       }
-
       clearTimeout(this.requestDelay);
-
       this.requestDelay = setTimeout(async () => {
-        const response = await api.get(`api/autocomplete-company?company_name=${text}`,{headers})
+        const response = await api.get(`api/autocomplete-company?company_name=${text}`, {headers})
         this.suggestedCompanies = response.data
         if (text.length) {
           this.disableContinueButton = false;
         }
-      }, 1000)
+        this.suggestionLoading = false
+      }, 500)
     },
     continueToCreate() {
+      this.loading = true;
+
       if (this.showForm) {
         this.showForm = false
+        this.loading = false
         return
       }
 
@@ -231,8 +237,9 @@ export default {
         Authorization: `Bearer ${this.authStore.token}`
       }
 
-      api.post(`api/leads/validate-company?company=${this.company}`, {},{headers}).then(() => {
+      api.post(`api/leads/validate-company?company=${this.company}`, {}, {headers}).then(() => {
         this.showForm = true;
+        this.loading = false;
       }).catch((error) => {
         const data = error.response.data;
 
@@ -242,12 +249,16 @@ export default {
           actions: [{icon: 'close', color: 'white'}],
           color: 'negative'
         })
+
+        this.loading = false;
       })
 
     }
   },
   data() {
     return {
+      loading: false,
+      suggestionLoading: false,
       company: '',
       name: '',
       email: '',

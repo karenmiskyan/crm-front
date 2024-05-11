@@ -11,7 +11,7 @@
     </q-list>
   </div>
   <div>
-    <q-file clearable outlined v-model="attachedFile" @update:modelValue="attachFile">
+    <q-file clearable outlined v-model="attachedFile">
       <template v-slot:prepend>
         <q-icon name="attach_file"/>
       </template>
@@ -54,9 +54,6 @@ export default {
         this.attachedFile = null
         this.attachments.push(response.data)
       })
-    },
-    attachFile(file) {
-      console.log(file)
     },
   },
   setup(props) {

@@ -27,6 +27,7 @@ const routes = [
           guard: ['admin']
         }
       },
+      { path: '/', redirect: { name: 'leads' }}
     ]
   },
   {

@@ -3,12 +3,6 @@
     <q-page-container>
       <q-page class="flex flex-center bg-grey-2">
         <q-card class="q-pa-md my_card" bordered>
-          <!--          <q-spinner-oval-->
-          <!--            class="loader"-->
-          <!--            color="dark"-->
-          <!--            size="1em"-->
-          <!--          />-->
-          <!--          <div class="loading-layer"></div>-->
           <q-card-section class="flex items-center justify-between text-center q-py-none">
             <q-icon color="dark" size="5rem">
               <svg width="148" height="50" viewBox="0 0 148 50" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -30,22 +24,28 @@
           </q-card-section>
           <q-card-section>
             <q-form ref="registerForm">
-              <q-input dense outlined v-model="name" :rules="validation.name" label="Full Name*"
+              <q-input v-on:keyup.enter="register" dense outlined v-model="name" :rules="validation.name"
+                       label="Full Name*"
                        lazy-rules="ondemand"></q-input>
-              <q-input dense outlined class="q-mt-md" :rules="validation.email" v-model="email"
+              <q-input v-on:keyup.enter="register" dense outlined class="q-mt-md" :rules="validation.email" v-model="email"
                        label="Email Address*" lazy-rules="ondemand"></q-input>
-              <q-input dense outlined class="q-mt-md" :rules="validation.password" v-model="password" type="password"
-                       label="Password*" lazy-rules="ondemand"></q-input>
-              <q-input dense outlined bottom-slots class="q-mt-md"
-                       :rules="validation.password.push(() => this.confirmPassword === this.password || 'Passwords must match')"
-                       v-model="confirmPassword" type="password" label="Confirm password*"
-                       lazy-rules="ondemand">
+              <q-input
+                v-on:keyup.enter="register"
+                dense outlined class="q-mt-md" :rules="validation.password"
+                v-model="password" type="password"
+                label="Password*" lazy-rules="ondemand"></q-input>
+              <q-input
+                v-on:keyup.enter="register"
+                dense outlined bottom-slots class="q-mt-md"
+                :rules="validation.password.push(() => this.confirmPassword === this.password || 'Passwords must match')"
+                v-model="confirmPassword" type="password" label="Confirm password*"
+                lazy-rules="ondemand">
               </q-input>
             </q-form>
           </q-card-section>
           <q-card-section>
             <q-btn id="submit-button" unelevated color="dark" size="md" no-caps class="full-width"
-                   @click="register">
+                   @click="register" :loading="isLoad">
               <span class="btn-text">Sign Up</span>
             </q-btn>
           </q-card-section>
@@ -66,39 +66,38 @@ import {useQuasar} from "quasar";
 export default {
   methods: {
     async register() {
-      if (!(await this.validate())) return;
-      api.post('/api/register', {
-        name: this.name,
-        email: this.email,
-        password: this.password,
-        confirmPassword: this.confirmPassword
-      }).then(response => {
-        this.store.setToken(response.data);
-        this.$router.push({name: 'leads'})
-      }).catch(error => {
-        const errors = error.response.data.errors
-        const message = Object.values(errors).length ? Object.values(errors)[0][0] : 'Unhandled error, please contact with support';
+      this.isLoad = true
+      this.$refs.registerForm.validate().then(success => {
+        if (success) {
+          api.post('/api/register', {
+            name: this.name,
+            email: this.email,
+            password: this.password,
+            confirmPassword: this.confirmPassword
+          }).then(response => {
+            this.store.setToken(response.data);
+            this.$router.push({name: 'leads'})
+          }).catch(error => {
+            const errors = error.response.data.errors
+            const message = Object.values(errors).length ? Object.values(errors)[0][0] : 'Unhandled error, please contact with support';
 
-        const options = {
-          message,
-          color: 'negative',
-          icon: 'error',
+            const options = {
+              message,
+              color: 'negative',
+              icon: 'error',
+            }
+            this.showNotification(options)
+            this.isLoad = false
+          });
+        } else {
+          this.isLoad = false
         }
-        this.showNotification(options)
-      });
+      })
     },
-    isPasswordsMatching() {
-      this.isPasswordMatching = (this.password === this.confirmPassword);
-      return this.isPasswordMatching;
-    }
   },
   setup() {
     const store = useAuthStore();
     const $q = useQuasar()
-
-    function validate() {
-      return this.$refs.registerForm.validate();
-    }
 
     function showNotification(opts) {
       $q.notify({
@@ -115,8 +114,8 @@ export default {
       password: ref(''),
       confirmPassword: ref(''),
       isPasswordMatching: true,
+      isLoad: ref(false),
       store,
-      validate,
       showNotification,
       validation
     }

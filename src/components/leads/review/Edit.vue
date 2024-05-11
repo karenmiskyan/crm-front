@@ -5,6 +5,25 @@
       <div class="q-pb-sm q-my-none">
         <q-input
           filled
+          full-width
+          v-model="company"
+          id="companyField"
+          :loading="suggestionLoading"
+          @update:model-value="getSuggestions"
+          label="Company*"
+          lazy-rules="ondemand" :rules="[ val => val && val.length > 0 || 'Please type something']"
+        />
+        <div class="company-suggestion q-pb-lg full-width" v-if="suggestedCompanies.length">
+          <q-list bordered separator>
+            <q-item v-bind:key="item" v-for="item of suggestedCompanies" class="list-item">
+              <q-item-section>{{ item }}</q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+      </div>
+      <div class="q-pb-sm q-my-none">
+        <q-input
+          filled
           class="q-my-none"
           type="text"
           v-model="name"
@@ -113,7 +132,7 @@
 import validation from "src/common/validation";
 import {useCommonStore} from "stores/common";
 import {useAuthStore} from "stores/auth";
-import {computed, ref} from "vue";
+import {computed, ref, watchEffect} from "vue";
 import {useQuasar} from "quasar";
 import {api} from "boot/axios";
 import {checkPermission} from "src/common/utils";
@@ -138,6 +157,7 @@ export default {
       }
 
       const data = {
+        company: this.company,
         name: this.name,
         email: this.email,
         phone: this.phone,
@@ -167,7 +187,26 @@ export default {
       }).catch(() => {
 
       })
-    }
+    },
+    async getSuggestions(text) {
+      this.suggestionLoading = true;
+      const headers = {
+        Authorization: `Bearer ${this.authStore.token}`
+      }
+      clearTimeout(this.requestDelay);
+      this.requestDelay = setTimeout(async () => {
+        const response = await api.get(`api/autocomplete-company?company_name=${text}`, {headers})
+        this.suggestedCompanies = response.data
+        if (text.length) {
+          this.disableContinueButton = false;
+        }
+        this.suggestionLoading = false
+
+        if (text.length === 0) {
+          this.suggestedCompanies = []
+        }
+      }, 500)
+    },
   },
   setup(props) {
     const store = useCommonStore()
@@ -179,6 +218,7 @@ export default {
     const assigneeOptions = computed(() => store.assigneeOptions);
     const sourceOptions = computed(() => store.sourceOptions);
 
+    const company = ref(props.lead.company)
     const name = ref(props.lead.name)
     const email = ref(props.lead.email)
     const phone = ref(props.lead.phone)
@@ -195,16 +235,25 @@ export default {
     const eclipseId = ref(props.lead.eclipseId)
     const reviewingLead = ref(computed(() => store.reviewingLead))
 
+    watchEffect(() => {
+      console.log(document.querySelector('#companyField'));
+    })
+
     return {
+      store,
+      authStore,
       $q,
       statusOptions,
       tagOptions,
       assigneeOptions,
       sourceOptions,
 
+      suggestedCompanies: ref([]),
+      suggestionLoading: ref(false),
+      suggestedCompaniesShow: false,
+
       // Form
-      store,
-      authStore,
+      company,
       name,
       email,
       phone,
@@ -220,7 +269,16 @@ export default {
       address,
       eclipseId,
       reviewingLead,
+      test: false,
     }
   }
 }
 </script>
+
+<style lang="scss">
+.company-suggestion {
+  top: 55px;
+  left: 0;
+  z-index: 1;
+}
+</style>

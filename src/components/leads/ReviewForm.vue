@@ -109,7 +109,6 @@ export default {
 
       api.get(`api/leads/${this.lead.id}`, {headers}).then((response) => {
         this.activities = response.data.activity_logs ? response.data.activity_logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) : []
-        console.log('this.activities', this.activities)
       })
     }
   },

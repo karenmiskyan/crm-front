@@ -78,7 +78,6 @@ export default defineComponent({
   },
   methods: {
     updateChart() {
-      console.log('sadasdasd')
       const headers = {
         Authorization: `Bearer ${this.authStore.token}`
       }
@@ -103,8 +102,8 @@ export default defineComponent({
           this.$refs.activityChart.chart.updateSeries(this.series)
         }
 
-        this.$refs.activityChart.chart.render();
-        this.$refs.activityChart.chart.updateOptions(this.options)
+        this.$refs.activityChart?.chart?.render();
+        this.$refs.activityChart?.chart?.updateOptions(this.options)
       });
     },
     async bulkExportFiltered() {

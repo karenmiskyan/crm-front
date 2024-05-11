@@ -23,20 +23,18 @@
             <span class="text-grey-9 text-h5 text-weight-bold">Sign In</span>
           </q-card-section>
           <q-form ref="loginForm">
-
             <q-card-section>
-
-              <q-input dense outlined class="q-mt-md" :rules="validation.email" v-model="email"
+              <q-input dense outlined v-on:keyup.enter="login" class="q-mt-md" :rules="validation.email" v-model="email"
                        label="Email Address*" lazy-rules="ondemand"></q-input>
-              <q-input dense outlined class="q-mt-md" :rules="validation.password" v-model="password" type="password"
+              <q-input dense outlined v-on:keyup.enter="login" class="q-mt-md" :rules="validation.password"
+                       v-model="password" type="password"
                        label="Password*" lazy-rules="ondemand"></q-input>
             </q-card-section>
             <q-card-section>
-              <q-btn unelevated color="dark" size="md" label="Sign in" no-caps class="full-width"
-                     @click="login"></q-btn>
+              <q-btn unelevated :loading="isLoad" color="dark" label="Sign In" size="md" no-caps class="full-width"
+                     @click="login"/>
             </q-card-section>
           </q-form>
-
         </q-card>
       </q-page>
     </q-page-container>
@@ -54,31 +52,34 @@ import {useQuasar} from 'quasar'
 export default {
   methods: {
     async login() {
-      if (!(await this.validate())) return
-      api.post('/api/login', {
-        email: this.email,
-        password: this.password
-      }).then(response => {
-        console.log('sdsdsdsds')
-        this.authStore.setToken(response.data);
-        this.$router.push({name: 'leads'})
-      }).catch(error => {
-        const options = {
-          message: 'Wrong credentials. Please try again',
-          color: 'negative',
-          icon: 'error',
+      this.isLoad = true
+      this.$refs.loginForm.validate().then((success) => {
+        if (success) {
+          api.post('/api/login', {
+            email: this.email,
+            password: this.password
+          }).then(response => {
+            this.isLoad = false
+            this.authStore.setToken(response.data);
+            this.$router.push({name: 'leads'})
+          }).catch(error => {
+            const options = {
+              message: 'Wrong credentials. Please try again',
+              color: 'negative',
+              icon: 'error',
+            }
+            this.showNotification(options);
+            this.isLoad = false
+          });
+        } else {
+          this.isLoad = false
         }
-        this.showNotification(options);
-      });
+      })
     }
   },
   setup() {
     const authStore = useAuthStore();
     const $q = useQuasar()
-
-    function validate() {
-      return this.$refs.loginForm.validate();
-    }
 
     function showNotification(opts) {
       $q.notify({
@@ -93,7 +94,7 @@ export default {
       email: ref(''),
       password: ref(''),
       validation,
-      validate,
+      isLoad: ref(false),
       showNotification,
       authStore,
     }

@@ -149,6 +149,7 @@
 <script>
 import {ref} from 'vue'
 import {useAuthStore} from "stores/auth";
+import {api} from "boot/axios";
 
 export default {
   name: 'MyLayout',
@@ -166,6 +167,14 @@ export default {
     function logout() {
       authStore.clearToken()
     }
+
+    const headers = {
+      Authorization: `Bearer ${authStore.token}`
+    }
+
+    api.get('api/activities', {headers}).then(response => {
+      console.log(response)
+    });
 
     return {
       leftDrawerOpen,
