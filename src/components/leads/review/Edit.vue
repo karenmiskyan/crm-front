@@ -136,6 +136,7 @@ import {computed, ref, watchEffect} from "vue";
 import {useQuasar} from "quasar";
 import {api} from "boot/axios";
 import {checkPermission} from "src/common/utils";
+import {useLeadsStore} from "stores/leads";
 
 export default {
   props: {
@@ -183,7 +184,7 @@ export default {
 
         this.store.updateReviewingLead(data)
 
-        this.store.updateLead(this.lead.id, data)
+        this.leadsStore.updateLead(this.lead.id, data)
       }).catch(() => {
 
       })
@@ -211,6 +212,7 @@ export default {
   setup(props) {
     const store = useCommonStore()
     const authStore = useAuthStore()
+    const leadsStore = useLeadsStore()
     const $q = useQuasar();
 
     const statusOptions = computed(() => store.statusOptions);
@@ -242,6 +244,7 @@ export default {
     return {
       store,
       authStore,
+      leadsStore,
       $q,
       statusOptions,
       tagOptions,

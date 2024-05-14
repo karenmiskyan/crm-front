@@ -2,7 +2,9 @@
   <div class="text-h6 q-pb-md">Notes</div>
   <q-list v-if="notes.length" bordered separator>
     <q-item v-bind:key="note.id" v-for="note of notes">
-      <q-item-section>{{ note.content }}</q-item-section>
+      <q-item-section>
+        <div v-html="note.content"/>
+      </q-item-section>
       <q-item-section side>{{ note.date }}</q-item-section>
     </q-item>
   </q-list>

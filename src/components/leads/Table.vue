@@ -6,7 +6,7 @@
       row-key="id"
       binary-state-sort
       class="my-sticky-column-table"
-      :rows="rows"
+      :rows="leadRows"
       :columns="columns"
       :loading="loading"
       :filter="filter"
@@ -68,7 +68,7 @@
 </template>
 
 <script>
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, onMounted, provide, ref, watch} from 'vue'
 import {api} from "boot/axios";
 import {useAuthStore} from "stores/auth";
 import {useCommonStore} from "stores/common";
@@ -76,6 +76,7 @@ import moment from 'moment'
 import ReviewForm from "components/leads/ReviewForm.vue";
 import {mapState, storeToRefs} from "pinia";
 import {objectToQueryString} from "src/common/utils";
+import {useLeadsStore} from "stores/leads";
 
 const columns = [
   {name: 'company', align: 'left', label: 'Company', field: 'company', sortable: true},
@@ -137,50 +138,17 @@ export default {
   methods: {
     async onRequest(props) {
       const {page, rowsPerPage, sortBy, descending} = props.pagination
-      const filter = props.filter
-
-      this.loading = true
-
+      this.leadsStore.isLoading = true
       const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage
-
-      const startRow = (page - 1) * rowsPerPage
-
-      const data = await this.receiveLeads(startRow, page, fetchCount, filter, sortBy, descending)
-
-      this.commonStore.updateLeads(data.leads);
-
-      this.pagination.rowsNumber = data.total
-
+      this.leadsStore.request(page, fetchCount)
       this.pagination.page = page
       this.pagination.rowsPerPage = rowsPerPage
       this.pagination.sortBy = sortBy
       this.pagination.descending = descending
+
       this.loading = false
     },
-    async receiveLeads(startRow, page, count, filter) {
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.authStore.token}`
-      }
-      const queryString = objectToQueryString(filter);
-
-      const response = await api.get(`/api/leads?page=${page}&per_page=${count}&${queryString}`, {headers})
-
-      const data = response.data;
-
-      this.commonStore.updateStatusOptions(response.data.statusOptions);
-      this.commonStore.updateAssigneeOptions(response.data.users);
-      this.commonStore.updateCreatedBy(response.data.users);
-      this.commonStore.updateSourceOptions(response.data.leadSources);
-      this.commonStore.updateBranchOptions(response.data.branches);
-      const total = data?.leads.total;
-
-      let leads = data.leads.data || [];
-
-      return {leads, total}
-    },
     editLead(lead) {
-
       const headers = {
         Authorization: `Bearer ${this.authStore.token}`
       }
@@ -196,22 +164,28 @@ export default {
   props: {
     filter: Object
   },
-  computed: {
-    ...mapState(useCommonStore, ['leads'])
-  },
   setup() {
     const editLeadObject = ref(null);
     const isModalOpen = ref(false)
     const authStore = useAuthStore();
     const commonStore = useCommonStore();
-    const selectedLeads = ref([])
+    const leadsStore = useLeadsStore();
+
+    const leadRows = computed(() => leadsStore.leads)
+
+    const selectedLeads = computed({
+      get: () => leadsStore.selectedLeads,
+      set: (value) => leadsStore.selectedLeads = value
+    })
 
     const assigneeOptions = ref(computed(() => commonStore.assigneeOptions));
 
     const rows = computed(() => commonStore.leads)
 
     const leadsTable = ref()
-    const loading = ref(false)
+
+    const loading = computed(() => leadsStore.isLoading)
+
     const pagination = ref({
       sortBy: 'desc',
       descending: false,
@@ -220,8 +194,16 @@ export default {
       rowsNumber: 20
     })
 
-    onMounted(() => {
+    watch(() => (leadsStore.total), (newValue, oldValue) => {
+      pagination.value.rowsNumber = newValue
+    }, { deep: true });
+
+    function reFetch() {
       leadsTable.value.requestServerInteraction()
+    }
+
+    onMounted(() => {
+      reFetch()
     })
 
     const statusColors = {
@@ -234,7 +216,7 @@ export default {
     }
 
     return {
-      rows,
+      leadRows,
       selectedLeads,
       columns,
       authStore,
@@ -246,6 +228,7 @@ export default {
       isModalOpen,
       assigneeOptions,
       statusColors,
+      leadsStore,
       getSelectedString() {
         return selectedLeads.value.length === 0 ? '' : `${selectedLeads.value.length} record${selectedLeads.value.length > 1 ? 's' : ''} selected of ${rows.value.length}`
       }

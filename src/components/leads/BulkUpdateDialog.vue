@@ -93,6 +93,7 @@ import {useCommonStore} from "stores/common";
 import {useAuthStore} from "stores/auth";
 import {useQuasar} from "quasar";
 import {checkPermission} from "src/common/utils";
+import {useLeadsStore} from "stores/leads";
 
 const emits = defineEmits(['closed', 'updated'])
 const props = defineProps(['selectedLeads', 'isOpen'])
@@ -102,6 +103,7 @@ const selectedLeads = toRef(props, 'selectedLeads')
 
 const commonStore = useCommonStore();
 const authStore = useAuthStore();
+const leadsStore = useLeadsStore();
 
 const statusOptions = computed(() => commonStore.statusOptions);
 const assigneeOptions = computed(() => commonStore.assigneeOptions);
@@ -125,7 +127,7 @@ watch(isOpen, () => {
   isModalOpen.value = isOpen.value
 })
 
-watch(updateForm, (value, oldValue, onCleanup) => {
+watch(updateForm, (value) => {
   saveBtnEnabled.value = false
   for (let key in value) {
     if (value[key] && value[key].length || Object.keys(value[key]).length) {
@@ -169,7 +171,7 @@ function bulkUpdate() {
   })
 
   api.post('/api/bulk-update', data, {headers}).then(response => {
-    commonStore.updateLeadsBulk(data)
+    leadsStore.updateLeadsBulk(data)
     $q.notify({
       message: 'Updated',
       position: 'bottom-right',

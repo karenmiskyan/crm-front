@@ -5,116 +5,19 @@
       <div class="flex justify-between items-center">
         <div class="action-buttons">
           <div class="YL__toolbar-input-container row no-wrap full-width">
-            <q-input dense outlined square style="min-width: 250px" v-model="textSearch"
+            <q-input dense outlined square style="min-width: 250px" v-model="generalSearch"
                      @update:model-value="textSearchUpdated" placeholder="Search" class="bg-white full-width col"/>
           </div>
         </div>
         <div class="action-buttons">
           <div class="q-py-md q-gutter-sm">
-            <q-btn @click="bulkExportFiltered" :loading="exportLoading" v-if="checkPermission(authStore.roles, 'admin')" label="Export" color="dark" unelevated icon="open_in_new">
+            <q-btn @click="bulkExportFiltered" :loading="exportLoading" v-if="checkPermission(authStore.roles, 'admin')"
+                   label="Export" color="dark" unelevated icon="open_in_new">
               <q-tooltip :delay="1000" :offset="[0, 10]">Export</q-tooltip>
             </q-btn>
             <q-btn-group outline>
-              <q-btn color="dark" text-color="white" label="Filter" unelevated icon="tune">
-                <q-tooltip :delay="1000" :offset="[0, 10]">Filter</q-tooltip>
-                <q-menu>
-                  <div class="row no-wrap q-pa-md">
-                    <div class="q-pa-md">
-                      <div class="q-gutter-md row flex column">
-                        <div v-if="roles.includes('admin') || roles.includes('manager')">
-                          <q-select
-                            v-model="createdBy"
-                            :options="createdByOptions"
-                            option-value="id"
-                            option-label="name"
-                            stack-label
-                            label="Created By"
-                            @update:model-value="updateFilter()"
-                          />
-                        </div>
-
-                        <div>
-                          <q-select
-                            v-model="status"
-                            multiple
-                            auto-grow
-                            full-width
-                            :options="statusOptions"
-                            @update:model-value="updateFilter()"
-                            use-chips
-                            stack-label
-                            label="Status"
-                          />
-                        </div>
-
-                        <div>
-                          <q-select
-                            v-model="branch"
-                            auto-grow
-                            full-width
-                            :options="branchOptions"
-                            @update:model-value="updateFilter()"
-                            use-chips
-                            stack-label
-                            label="Branch"
-                          />
-                        </div>
-
-                        <div>
-                          <q-input v-model="lastContact" mask="date" label="Last contact date">
-                            <template v-slot:append>
-                              <q-icon name="event" class="cursor-pointer">
-                                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                                  <q-date v-model="lastContact" @update:model-value="updateFilter()">
-                                    <div class="row items-center justify-end">
-                                      <q-btn v-close-popup label="Close" color="primary" flat/>
-                                    </div>
-                                  </q-date>
-                                </q-popup-proxy>
-                              </q-icon>
-                            </template>
-                          </q-input>
-                        </div>
-
-                        <div>
-                          <q-input v-model="createdAt.from" mask="date" label="Created date from">
-                            <template v-slot:append>
-                              <q-icon name="event" class="cursor-pointer">
-                                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                                  <q-date v-model="createdAt.from" @update:model-value="updateFilter()">
-                                    <div class="row items-center justify-end">
-                                      <q-btn v-close-popup label="Close" color="primary" flat/>
-                                    </div>
-                                  </q-date>
-                                </q-popup-proxy>
-                              </q-icon>
-                            </template>
-                          </q-input>
-                        </div>
-
-                        <div>
-                          <q-input v-model="createdAt.to" mask="date" label="Created date to">
-                            <template v-slot:append>
-                              <q-icon name="event" class="cursor-pointer">
-                                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                                  <q-date v-model="createdAt.to" @update:model-value="updateFilter()">
-                                    <div class="row items-center justify-end">
-                                      <q-btn v-close-popup label="Close" color="primary" flat/>
-                                    </div>
-                                  </q-date>
-                                </q-popup-proxy>
-                              </q-icon>
-                            </template>
-                          </q-input>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </q-menu>
-              </q-btn>
-              <q-btn color="dark" unelevated @click="clearFilter" label="Clear filter" icon="filter_alt_off">
-                <q-tooltip :delay="1000" :offset="[0, 10]">Clear Filter</q-tooltip>
-              </q-btn>
+              <q-btn color="dark" @click="openFilterSidebar = !openFilterSidebar" text-color="white" label="Filter"
+                     unelevated icon="tune"></q-btn>
             </q-btn-group>
             <q-btn :disable="disableBulkUpdate" v-if="checkPermission(authStore.roles, 'admin')"
                    @click="confirmDeletion" label="Delete selected" color="dark"
@@ -135,19 +38,22 @@
       </div>
     </div>
     <LeadsTable :filter="filter" @tagFiltered="updateTextSearch" @tableSelected="tableSelected"></LeadsTable>
-    <BulkUpdateDialog @updated="this.selectedLeads.length = 0" :isOpen="isOpenModal" :selectedLeads="selectedLeads" @modal-closed="isOpenModal = false"></BulkUpdateDialog>
+    <BulkUpdateDialog @updated="this.selectedLeads = []; this.disableBulkUpdate = true" :isOpen="isOpenModal"
+                      :selectedLeads="selectedLeads"
+                      @modal-closed="isOpenModal = false"></BulkUpdateDialog>
   </q-page>
 </template>
 
 <script>
 import Table from "components/leads/Table.vue";
-import {computed, inject, ref, watchEffect} from "vue";
+import {computed, ref} from "vue";
 import {useCommonStore} from "stores/common";
 import {api} from "boot/axios";
 import {useAuthStore} from "stores/auth";
 import {useQuasar} from "quasar";
 import BulkUpdateDialog from "components/leads/BulkUpdateDialog.vue";
 import {checkPermission, objectToQueryString} from "src/common/utils";
+import {useLeadsStore} from "stores/leads";
 
 export default {
   name: 'IndexPage',
@@ -159,40 +65,14 @@ export default {
       this.selectedLeads = selected
     },
     textSearchUpdated() {
-      clearTimeout(this.requestDelay);
-
+      clearTimeout(this.textSearchDelay);
       this.textSearchDelay = setTimeout(async () => {
-        this.updateFilter()
-      }, 1000)
-    },
-    clearFilter() {
-      this.createdBy = '';
-      this.status = [];
-      this.lastContact = '';
-      this.textSearch = '';
-      this.createdAt = {
-        from: '',
-        to: ''
-      };
-      this.textSearch = '';
-      this.branch = undefined;
-
-      this.updateFilter();
+        this.filter_general = this.generalSearch
+      }, 500)
     },
     updateTextSearch(data) {
-      this.textSearch = data
-      this.updateFilter()
-    },
-    updateFilter() {
-      this.filter = {
-        filter_status: this.status || '',
-        filter_created_by: this.createdBy?.id || '',
-        filter_general: this.textSearch || '',
-        filter_branch: this.branch || '',
-        filter_contact_date: this.lastContact || '',
-        filter_created_at_from: this.createdAt?.from || '',
-        filter_created_at_to: this.createdAt?.to || ''
-      }
+      this.generalSearch = data
+      this.filter_general = data
     },
     async bulkExportFiltered() {
       this.exportLoading = true;
@@ -220,27 +100,24 @@ export default {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(link);
 
+        this.selectedLeads = []
         this.exportLoading = false
       } catch (error) {
         console.error('Failed to download CSV:', error);
       }
     },
     bulkDeleteSelected() {
+      this.leadsStore.isLoading = true
       const headers = {
         Authorization: `Bearer ${this.authStore.token}`
       }
       api.delete(`/api/bulk-delete?${objectToQueryString({ids: this.selectedLeads.map(item => item.id)})}`, {headers})
         .then(() => {
-          this.updateFilter()
-          this.selectedLeads.length = 0;
+          this.selectedLeads = [];
+          this.disableBulkUpdate = true
+          this.filter_general = 'Hello'
+          this.filter_general = this.generalSearch
         })
-    },
-    clearCreatedAt() {
-      this.createdAt = {
-        from: '',
-        to: ''
-      };
-      this.updateFilter()
     },
     confirmDeletion() {
       this.$q.dialog({
@@ -260,67 +137,52 @@ export default {
   setup() {
     const store = useCommonStore();
     const authStore = useAuthStore();
+    const leadsStore = useLeadsStore();
     const $q = useQuasar()
 
-    const createdBy = ref('');
-    const status = ref([]);
-    const lastContact = ref('');
-    const createdAt = ref({
-      from: '',
-      to: ''
+    const selectedLeads = computed({
+      get: () => leadsStore.selectedLeads,
+      set: (value) => leadsStore.selectedLeads = value
     });
 
-    const textSearch = ref('');
-    const branch = ref();
     const disableBulkUpdate = ref(true)
-    const selectedLeads = ref([]);
 
     const textSearchDelay = ref()
+    const generalSearch = ref('')
 
-    const statusOptions = computed(() => store.statusOptions);
-    const assigneeOptions = computed(() => store.assigneeOptions);
-    const sourceOptions = computed(() => store.sourceOptions);
-    const branchOptions = computed(() => store.branchOptions);
+    const filter = computed(() => leadsStore.filter)
+    const openFilterSidebar = computed({
+      get: () => leadsStore.openFilterSidebar,
+      set: (value) => leadsStore.openFilterSidebar = value,
+    })
 
-    const isOpenModal = ref(false)
-
-    let filter = ref({
-      filter_status: [],
-      filter_created_by: '',
-      filter_general: '',
-      filter_contact_date: ''
+    const filter_general = computed({
+      get: () => leadsStore.filter.filter_general,
+      set: (value) => {
+        leadsStore.filter.filter_general = value
+      }
     });
 
-    const createdByOptions = computed(() => store.createdByOptions)
-
     const roles = authStore.user?.roles.map(item => item.name)
+
+    const isOpenModal = ref(false)
 
     return {
       authStore,
       store,
       $q,
-
-      createdByOptions,
-      branchOptions,
-      statusOptions,
-      lastContact,
-      createdBy,
-      createdAt,
-      status,
-      branch,
-      textSearch,
-
-      roles,
-
       filter,
-      disableBulkUpdate,
+      roles,
       selectedLeads,
-      assigneeOptions,
-      sourceOptions,
-      textSearchDelay,
-
       exportLoading: ref(false),
-      isOpenModal
+      isOpenModal,
+      textSearchDelay,
+      disableBulkUpdate,
+
+      generalSearch,
+      filter_general,
+      leadsStore,
+      openFilterSidebar,
     }
   }
 };

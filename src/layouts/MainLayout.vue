@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh lpR fFf" class="bg-grey-1">
-    <q-header elevated class="bg-white text-grey-8 q-py-xs" height-hint="58">
+    <q-header bordered class="bg-white text-grey-8 q-py-xs" height-hint="58">
       <q-toolbar>
         <q-btn
           flat
@@ -140,6 +140,22 @@
       </q-scroll-area>
     </q-drawer>
 
+    <q-drawer
+      v-model="isFilterSidebarOpen"
+      side="right"
+      overlay
+      behavior="desktop"
+      bordered
+      class="bg-grey-2"
+      :width="300"
+    >
+      <q-scroll-area class="fit">
+        <div class="q-pa-sm">
+          <filter-component></filter-component>
+        </div>
+      </q-scroll-area>
+    </q-drawer>
+
     <q-page-container>
       <router-view/>
     </q-page-container>
@@ -147,18 +163,28 @@
 </template>
 
 <script>
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import {useAuthStore} from "stores/auth";
 import {api} from "boot/axios";
+import Filter from "components/leads/Filter.vue";
+import {useLeadsStore} from "stores/leads";
 
 export default {
   name: 'MyLayout',
-
+  components: {
+    'filter-component': Filter
+  },
   setup() {
     const leftDrawerOpen = ref(false)
     const search = ref('')
     const authStore = useAuthStore()
+    const filterStore = useLeadsStore()
     const roles = authStore.user?.roles?.map(role => role.name)
+
+    const isFilterSidebarOpen = computed({
+      get: () => filterStore.openFilterSidebar,
+      set: (value) => filterStore.openFilterSidebar = value
+    })
 
     function toggleLeftDrawer() {
       leftDrawerOpen.value = !leftDrawerOpen.value
@@ -183,6 +209,7 @@ export default {
         {icon: 'bar_chart', text: 'Reports', route: 'reports', guards: ['admin']},
         {icon: 'group_add', text: 'leads', route: 'leads', guards: ['agent', 'manager', 'admin']},
       ],
+      isFilterSidebarOpen,
       toggleLeftDrawer,
       logout,
       roles
