@@ -37,7 +37,7 @@
       </template>
       <template v-slot:body-cell-phone="scope">
         <q-td auto-width>
-          <a v-if="scope.row.phone" :href="'tel:'+scope.row.phone">{{ scope.row.phone }}</a>
+          <a v-if="scope.row.phone_number.length > 2" :href="`tel:${scope.row.phone_number}`">{{ scope.row.phone_number }}</a>
           <span v-else>N/A</span>
         </q-td>
       </template>
@@ -59,6 +59,11 @@
               }}</q-chip>
           </span>
           <span v-else>N/A</span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-email="scope">
+        <q-td auto-width>
+          <a :href="`mailto:${scope.row.email}`">{{ scope.row.email }}</a>
         </q-td>
       </template>
     </q-table>
@@ -89,11 +94,20 @@ const columns = [
     format: val => `${val}`,
     sortable: true
   },
+  {
+    name: 'email',
+    required: true,
+    label: 'Email',
+    align: 'left',
+    field: row => row.email,
+    format: val => `${val}`,
+    sortable: true
+  },
   {name: 'eclipse_customer_id', align: 'left', label: 'Customer ID', field: 'eclipse_customer_id', sortable: true},
   {
     name: 'tags', label: 'Tags', align: 'left', field: row => row.tags,
   },
-  {name: 'phone', label: 'Phone', align: 'left', field: 'phone'},
+  {name: 'phone', label: 'Phone', align: 'left', field: 'phone_number'},
   {name: 'created_by', label: 'Created By', align: 'left', field: 'created_by'},
   {
     name: 'contact_date',

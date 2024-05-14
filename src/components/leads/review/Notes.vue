@@ -4,6 +4,7 @@
     <q-item v-bind:key="note.id" v-for="note of notes">
       <q-item-section>
         <div v-html="note.content"/>
+        <q-item-label caption>{{ note.user.name }}</q-item-label>
       </q-item-section>
       <q-item-section side>{{ note.date }}</q-item-section>
     </q-item>
@@ -61,7 +62,7 @@ export default {
         content: this.note,
         date: this.dateTime
       }
-      api.post(`/api/leads/${this.lead.id}/note`, data, {headers}).then(() => {
+      api.post(`/api/leads/${this.lead.id}/note`, data, {headers}).then((response) => {
         this.$q.notify({
           message: 'Note created successfully',
           position: 'bottom-right',
@@ -69,10 +70,9 @@ export default {
           color: 'dark'
         })
 
-        this.notes.push({
-          content: this.note,
-          date: this.dateTime
-        })
+        if (response.data.note) {
+          this.notes.push(response.data.note)
+        }
 
         this.note = '';
         this.dateTime = ''

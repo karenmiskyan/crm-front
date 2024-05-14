@@ -43,62 +43,52 @@
         <q-space/>
 
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn round dense flat color="grey-8" icon="notifications">
-            <q-badge color="red" text-color="white" floating>
-              2
-            </q-badge>
-            <q-tooltip>Notifications</q-tooltip>
-            <q-menu max-height="130px" no-shadow>
-              <div class="q-gutter-md">
-                <q-list bordered class="rounded-borders" style="max-width: 350px">
-                  <q-item-label header>Notifications</q-item-label>
-
-                  <q-item clickable v-ripple>
-                    <q-item-section>
-                      <q-item-label lines="1">Brunch this weekend?</q-item-label>
-                      <q-item-label caption lines="2">
-                        <span class="text-weight-bold">Janet</span>
-                        -- I'll be in your neighborhood doing errands this
-                        weekend. Do you want to grab brunch?
-                      </q-item-label>
-                    </q-item-section>
-
-                    <q-item-section side top>
-                      1 min ago
-                    </q-item-section>
-                  </q-item>
-
-                  <q-separator inset="item"/>
-
-                  <q-item clickable v-ripple>
-                    <q-item-section>
-                      <q-item-label lines="1">Linear Project</q-item-label>
-                      <q-item-label caption lines="2">
-                        <span class="text-weight-bold">John</span>
-                        -- Can we schedule a call for tomorrow?
-                      </q-item-label>
-                    </q-item-section>
-
-                    <q-item-section side top>
-                      1 min ago
-                    </q-item-section>
-                  </q-item>
-                </q-list>
-              </div>
-            </q-menu>
-          </q-btn>
-          <q-btn round flat>
-            <q-avatar size="26px">
-              <img src="https://cdn.quasar.dev/img/boy-avatar.png">
-            </q-avatar>
+          <q-btn no-caps flat>
+            <span>Welcome {{user.name}}</span>
             <q-tooltip>Account</q-tooltip>
             <q-menu persistent auto-close>
               <q-list style="min-width: 100px">
-                <q-separator></q-separator>
                 <q-item clickable @click="logout">
                   <q-item-section>Logout</q-item-section>
                 </q-item>
               </q-list>
+            </q-menu>
+          </q-btn>
+          <q-btn round dense flat color="grey-8" icon="notifications">
+            <q-badge v-if="notifications.length" color="red" text-color="white" floating>
+              {{ notifications.length }}
+            </q-badge>
+            <q-tooltip>Notifications</q-tooltip>
+            <q-menu max-height="300px" no-shadow>
+              <div class="q-gutter-md">
+                <q-list bordered class="rounded-borders" style="min-width: 400px; max-width: 400px">
+                  <q-item-label header>Notifications</q-item-label>
+
+                  <template v-bind:key="notif.id" v-for="notif of notifications">
+                    <q-item clickable v-ripple>
+                      <q-item-section>
+                        <q-item-label lines="1">
+                          <span class="notif-content">
+                            {{ notif.change_info }} for {{ notif.lead.company }}
+                          </span>
+                        </q-item-label>
+                        <q-item-label caption lines="2">
+                          <span class="text-weight-bold">{{
+                              users.find(item => item.id === notif.user_id)?.name
+                            }}</span>
+                        </q-item-label>
+                      </q-item-section>
+
+                      <q-item-section side top>
+                        {{ moment(notif.created_at).fromNow() }}
+                      </q-item-section>
+                    </q-item>
+
+                    <q-separator/>
+                  </template>
+
+                </q-list>
+              </div>
             </q-menu>
           </q-btn>
         </div>
@@ -168,6 +158,8 @@ import {useAuthStore} from "stores/auth";
 import {api} from "boot/axios";
 import Filter from "components/leads/Filter.vue";
 import {useLeadsStore} from "stores/leads";
+import moment from 'moment'
+import {useCommonStore} from "stores/common";
 
 export default {
   name: 'MyLayout',
@@ -179,7 +171,11 @@ export default {
     const search = ref('')
     const authStore = useAuthStore()
     const filterStore = useLeadsStore()
+    const commonStore = useCommonStore()
     const roles = authStore.user?.roles?.map(role => role.name)
+    const users = commonStore.assigneeOptions
+    const user = authStore.user;
+    const notifications = ref([]);
 
     const isFilterSidebarOpen = computed({
       get: () => filterStore.openFilterSidebar,
@@ -198,13 +194,17 @@ export default {
       Authorization: `Bearer ${authStore.token}`
     }
 
-    api.get('api/activities', {headers}).then(response => {
-      console.log(response)
-    });
+    // api.get('api/activities', {headers}).then(response => {
+    //   notifications.value = response.data.activities && response.data.activities.length ? response.data.activities.slice(0, 5) : [];
+    // });
 
     return {
       leftDrawerOpen,
       search,
+      notifications,
+      users,
+      user,
+      moment,
       links1: [
         {icon: 'bar_chart', text: 'Reports', route: 'reports', guards: ['admin']},
         {icon: 'group_add', text: 'leads', route: 'leads', guards: ['agent', 'manager', 'admin']},

@@ -14,6 +14,7 @@ export const useLeadsStore = defineStore('leads', {
       filter_created_at_to: '',
       filter_general: '',
       filter_branch: '',
+      filter_source: [],
       filter_status: [],
     },
     count: 0,

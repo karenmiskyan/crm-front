@@ -35,6 +35,20 @@
 
         <div>
           <q-select
+            v-model="source"
+            multiple
+            auto-grow
+            full-width
+            :options="sourceOptions"
+            @update:model-value="updateFilter()"
+            use-chips
+            stack-label
+            label="Source"
+          />
+        </div>
+
+        <div>
+          <q-select
             v-model="branch"
             auto-grow
             full-width
@@ -125,7 +139,7 @@ const lastContact = computed({
   set: (value) => leadsStore.filter.filter_contact_date = value || ''
 })
 const createdBy = computed({
-  get: () => leadsStore.filter.filter_created_by || null,
+  get: () => commonStore.assigneeOptions.find(item => item.id === leadsStore.filter.filter_created_by) || null,
   set: (value) => leadsStore.filter.filter_created_by = value.id || ''
 })
 const createdAtFrom = computed({
@@ -139,6 +153,10 @@ const createdAtTo = computed({
 const status = computed({
   get: () => leadsStore.filter.filter_status || null,
   set: (value) => leadsStore.filter.filter_status = value || ''
+})
+const source = computed({
+  get: () => leadsStore.filter.filter_source || null,
+  set: (value) => leadsStore.filter.filter_source = value || ''
 })
 const branch = computed({
   get: () => leadsStore.filter.filter_branch || null,
