@@ -199,7 +199,7 @@ export default {
         console.log(error)
         const data = error.response.data;
 
-        this.$q.notify({
+        this.quasar.notify({
           message: data.errors.company.length ? data.errors.company[0] : 'Something went wrong, please contact with support',
           position: 'bottom-right',
           actions: [{icon: 'close', color: 'white'}],
@@ -243,7 +243,7 @@ export default {
       }).catch((error) => {
         const data = error.response.data;
 
-        this.$q.notify({
+        this.quasar.notify({
           message: data.errors.company.length ? data.errors.company[0] : 'Something went wrong, please contact with support',
           position: 'bottom-right',
           actions: [{icon: 'close', color: 'white'}],
@@ -283,7 +283,7 @@ export default {
     const authStore = useAuthStore()
     const suggestedCompanies = ref();
     const requestDelay = ref();
-    const $q = useQuasar()
+    const quasar = useQuasar()
     store.updateState();
 
     const statusOptions = computed(() => store.statusOptions);
@@ -303,7 +303,7 @@ export default {
       authStore,
       suggestedCompanies,
       requestDelay,
-      $q,
+      quasar,
       roles
     }
   }

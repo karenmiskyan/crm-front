@@ -187,6 +187,7 @@
 import {useCommonStore} from "stores/common";
 import {computed, ref} from "vue";
 import moment from "moment/moment";
+import {useLeadReviewStore} from "stores/lead_review";
 
 export default {
   computed: {
@@ -194,13 +195,11 @@ export default {
       return moment
     }
   },
-  props: {
-    lead: Object
-  },
   setup() {
     const commonStore = useCommonStore()
+    const leadReviewStore = useLeadReviewStore()
     const assigneeOptions = computed(() => commonStore.assigneeOptions)
-    const reviewingLead = ref(computed(() => commonStore.reviewingLead))
+    const reviewingLead = ref(computed(() => leadReviewStore.reviewingLead))
 
     const statusColors = {
       'New': 'positive',

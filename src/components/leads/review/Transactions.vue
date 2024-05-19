@@ -41,6 +41,7 @@
 import {ref} from "vue";
 import {api} from "boot/axios";
 import moment from "moment";
+import {useLeadReviewStore} from "stores/lead_review";
 
 export default {
   computed: {
@@ -48,12 +49,10 @@ export default {
       return moment
     }
   },
-  props: {
-    lead: Object
-  },
   setup(props) {
+    const leadReviewStore = useLeadReviewStore()
     const transactions = ref([]);
-    if (props.lead.eclipse_customer_id) {
+    if (leadReviewStore.reviewingLead.eclipse_customer_id) {
       api.get(`https://api.koaedi.com/api/account-histories-api/${props.lead.eclipse_customer_id}`).then((response) => {
         transactions.value = response.data
       })

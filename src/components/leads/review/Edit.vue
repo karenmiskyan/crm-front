@@ -132,16 +132,14 @@
 import validation from "src/common/validation";
 import {useCommonStore} from "stores/common";
 import {useAuthStore} from "stores/auth";
-import {computed, ref, watchEffect} from "vue";
+import {computed, ref} from "vue";
 import {useQuasar} from "quasar";
 import {api} from "boot/axios";
 import {checkPermission} from "src/common/utils";
 import {useLeadsStore} from "stores/leads";
+import {useLeadReviewStore} from "stores/lead_review";
 
 export default {
-  props: {
-    lead: Object
-  },
   computed: {
     validation() {
       return validation
@@ -156,6 +154,8 @@ export default {
       const headers = {
         Authorization: `Bearer ${this.authStore.token}`
       }
+
+      const leadId = this.reviewingLead.id;
 
       const data = {
         company: this.company,
@@ -174,17 +174,20 @@ export default {
         address: this.address,
       }
 
-      api.patch(`/api/leads/${this.lead.id}`, data, {headers}).then((response) => {
-        this.$q.notify({
+      console.log('123', this.reviewingLead)
+
+      api.patch(`/api/leads/${leadId}`, data, {headers}).then((response) => {
+        this.quasar.notify({
           message: 'Lead updated successfully',
           position: 'bottom-right',
           actions: [{icon: 'close', color: 'white'}],
           color: 'dark'
         })
 
-        this.store.updateReviewingLead(data)
+        this.leadReviewStore.updateReviewingLead(data)
 
-        this.leadsStore.updateLead(this.lead.id, data)
+        console.log('rrr', leadId)
+        this.leadsStore.updateLead(leadId, data)
       }).catch(() => {
 
       })
@@ -210,42 +213,41 @@ export default {
     },
   },
   setup(props) {
-    const store = useCommonStore()
+    const commonStore = useCommonStore()
+    const leadReviewStore = useLeadReviewStore()
     const authStore = useAuthStore()
     const leadsStore = useLeadsStore()
-    const $q = useQuasar();
+    const quasar = useQuasar();
 
-    const statusOptions = computed(() => store.statusOptions);
-    const tagOptions = computed(() => store.tagOptions);
-    const assigneeOptions = computed(() => store.assigneeOptions);
-    const sourceOptions = computed(() => store.sourceOptions);
+    const statusOptions = computed(() => commonStore.statusOptions);
+    const tagOptions = computed(() => commonStore.tagOptions);
+    const assigneeOptions = computed(() => commonStore.assigneeOptions);
+    const sourceOptions = computed(() => commonStore.sourceOptions);
 
-    const company = ref(props.lead.company)
-    const name = ref(props.lead.name)
-    const email = ref(props.lead.email)
-    const phone = ref(props.lead.phone)
-    const status = ref(props.lead.status)
-    const tags = ref(props.lead.tags)
-    const assignee = ref(assigneeOptions.value.find((item) => item.id === props.lead.assigned_id))
-    const lastContact = ref(props.lead.contact_date)
-    const source = ref(props.lead.source)
-    const zipCode = ref(props.lead.zip_code)
-    const country = ref(props.lead.country)
-    const state = ref(props.lead.state)
-    const city = ref(props.lead.city)
-    const address = ref(props.lead.address)
-    const eclipseId = ref(props.lead.eclipseId)
-    const reviewingLead = ref(computed(() => store.reviewingLead))
+    const reviewingLead = computed(() => leadReviewStore.reviewingLead)
 
-    watchEffect(() => {
-      console.log(document.querySelector('#companyField'));
-    })
+    const company = ref(reviewingLead.value.company)
+    const name = ref(reviewingLead.value.name)
+    const email = ref(reviewingLead.value.email)
+    const phone = ref(reviewingLead.value.phone)
+    const status = ref(reviewingLead.value.status)
+    const tags = ref(reviewingLead.value.tags)
+    const assignee = ref(assigneeOptions.value.find((item) => item.id === reviewingLead.value.assigned_id))
+    const lastContact = ref(reviewingLead.value.contact_date)
+    const source = ref(reviewingLead.value.source)
+    const zipCode = ref(reviewingLead.value.zip_code)
+    const country = ref(reviewingLead.value.country)
+    const state = ref(reviewingLead.value.state)
+    const city = ref(reviewingLead.value.city)
+    const address = ref(reviewingLead.value.address)
+    const eclipseId = ref(reviewingLead.value.eclipseId)
 
     return {
-      store,
+      commonStore,
+      leadReviewStore,
       authStore,
       leadsStore,
-      $q,
+      quasar,
       statusOptions,
       tagOptions,
       assigneeOptions,
@@ -272,7 +274,6 @@ export default {
       address,
       eclipseId,
       reviewingLead,
-      test: false,
     }
   }
 }

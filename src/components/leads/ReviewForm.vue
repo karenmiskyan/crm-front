@@ -28,11 +28,11 @@
         </q-tabs>
         <q-tab-panels v-model="tab" animated>
           <q-tab-panel name="profile">
-            <profile-tab :lead="lead"></profile-tab>
+            <profile-tab></profile-tab>
           </q-tab-panel>
 
           <q-tab-panel name="notes">
-            <notes-tab :lead="lead"></notes-tab>
+            <notes-tab></notes-tab>
           </q-tab-panel>
 
           <q-tab-panel name="activity">
@@ -40,19 +40,19 @@
           </q-tab-panel>
 
           <q-tab-panel name="attachments">
-            <attachments-tab :lead="lead"></attachments-tab>
+            <attachments-tab></attachments-tab>
           </q-tab-panel>
 
           <q-tab-panel name="transactions">
-            <transactions-tab :lead="lead"></transactions-tab>
+            <transactions-tab></transactions-tab>
           </q-tab-panel>
 
           <q-tab-panel name="email">
-            <email-tab :lead="lead"></email-tab>
+            <email-tab></email-tab>
           </q-tab-panel>
 
           <q-tab-panel name="edit">
-            <edit-tab @leadUpdated="leadInfoUpdated" :lead="lead"></edit-tab>
+            <edit-tab></edit-tab>
           </q-tab-panel>
         </q-tab-panels>
       </q-card-section>
@@ -75,6 +75,7 @@ import Transactions from "components/leads/review/Transactions.vue";
 import {computed, ref} from "vue";
 import {api} from "boot/axios";
 import {useAuthStore} from "stores/auth";
+import {useLeadReviewStore} from "stores/lead_review";
 
 export default {
   components: {
@@ -99,9 +100,6 @@ export default {
     closed() {
       this.$emit('modal-closed')
     },
-    leadInfoUpdated(data) {
-      this.lead.value = data
-    },
     updateActivityList() {
       const headers = {
         Authorization: `Bearer ${this.authStore.token}`
@@ -112,9 +110,10 @@ export default {
       })
     }
   },
-  setup(props) {
+  setup() {
     const authStore = useAuthStore()
-    const lead = ref(computed(() => props.editLead))
+    const leadReviewStore = useLeadReviewStore()
+    const lead = ref(computed(() => leadReviewStore.reviewingLead))
     const activities = ref([])
     return {
       lead,

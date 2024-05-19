@@ -120,7 +120,7 @@ export default {
         })
     },
     confirmDeletion() {
-      this.$q.dialog({
+      this.quasar.dialog({
         title: `Delete`,
         message: `Are you sure you want to delete the selected leads (${this.selectedLeads.length})?`,
         cancel: true,
@@ -138,7 +138,7 @@ export default {
     const store = useCommonStore();
     const authStore = useAuthStore();
     const leadsStore = useLeadsStore();
-    const $q = useQuasar()
+    const quasar = useQuasar()
 
     const selectedLeads = computed({
       get: () => leadsStore.selectedLeads,
@@ -170,7 +170,7 @@ export default {
     return {
       authStore,
       store,
-      $q,
+      quasar,
       filter,
       roles,
       selectedLeads,

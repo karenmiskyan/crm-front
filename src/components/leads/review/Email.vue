@@ -16,15 +16,13 @@
   </div>
 </template>
 <script>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {useAuthStore} from "stores/auth";
 import {api} from "boot/axios";
 import {useQuasar} from "quasar";
+import {useLeadReviewStore} from "stores/lead_review";
 
 export default {
-  props: {
-    lead: Object
-  },
   methods: {
     sendEmail() {
       const headers = {
@@ -34,7 +32,7 @@ export default {
         subject: this.subject,
         email_content: this.content
       },{headers}).then(() => {
-        this.$q.notify({
+        this.quasar.notify({
           message: 'Email sent successfully',
           position: 'bottom-right',
           actions: [{icon: 'close', color: 'white'}],
@@ -47,13 +45,16 @@ export default {
   },
   setup () {
     const authStore = useAuthStore()
-    const $q = useQuasar()
+    const leadReviewStore = useLeadReviewStore()
+    const lead = computed(() => leadReviewStore.reviewingLead)
+    const quasar = useQuasar()
 
     return {
       subject: ref(''),
       content: ref(''),
       authStore,
-      $q
+      quasar,
+      lead,
     }
   }
 }

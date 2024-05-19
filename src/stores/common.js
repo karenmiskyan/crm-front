@@ -11,8 +11,6 @@ export const useCommonStore = defineStore('common', {
     createdByOptions: [],
     sourceOptions: [],
     tagOptions: ['Follow Up', 'Tomorrow'],
-    leads: [],
-    reviewingLead: null,
   }),
   getters: {},
   actions: {
@@ -70,8 +68,5 @@ export const useCommonStore = defineStore('common', {
         }
       })
     },
-    updateReviewingLead(value) {
-      this.reviewingLead = value
-    }
   }
 })

@@ -79,10 +79,10 @@ export default {
   },
   setup() {
     const authStore = useAuthStore();
-    const $q = useQuasar()
+    const quasar = useQuasar()
 
     function showNotification(opts) {
-      $q.notify({
+      quasar.notify({
         ...opts,
         position: 'bottom-right',
         timeout: 4000,

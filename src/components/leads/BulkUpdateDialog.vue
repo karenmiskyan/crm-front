@@ -97,7 +97,7 @@ import {useLeadsStore} from "stores/leads";
 
 const emits = defineEmits(['closed', 'updated'])
 const props = defineProps(['selectedLeads', 'isOpen'])
-const $q = useQuasar()
+const quasar = useQuasar()
 const isOpen = toRef(props, 'isOpen')
 const selectedLeads = toRef(props, 'selectedLeads')
 
@@ -172,7 +172,7 @@ function bulkUpdate() {
 
   api.post('/api/bulk-update', data, {headers}).then(response => {
     leadsStore.updateLeadsBulk(data)
-    $q.notify({
+    quasar.notify({
       message: 'Updated',
       position: 'bottom-right',
       actions: [{icon: 'close', color: 'white'}],

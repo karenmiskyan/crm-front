@@ -48,11 +48,9 @@ import {ref} from "vue";
 import {useAuthStore} from "stores/auth";
 import {api} from "boot/axios";
 import {useQuasar} from "quasar";
+import {useLeadReviewStore} from "stores/lead_review";
 
 export default {
-  props: {
-    lead: Object
-  },
   methods: {
     saveNote() {
       const headers = {
@@ -63,7 +61,7 @@ export default {
         date: this.dateTime
       }
       api.post(`/api/leads/${this.lead.id}/note`, data, {headers}).then((response) => {
-        this.$q.notify({
+        this.quasar.notify({
           message: 'Note created successfully',
           position: 'bottom-right',
           actions: [{icon: 'close', color: 'white'}],
@@ -79,18 +77,19 @@ export default {
       })
     }
   },
-  setup(props) {
+  setup() {
     const authStore = useAuthStore()
-    const $q = useQuasar()
+    const leadReviewStore = useLeadReviewStore()
+    const quasar = useQuasar()
 
-    const notes = ref(props.lead.notes)
+    const notes = leadReviewStore.reviewingLead.notes
 
     return {
       note: ref(''),
       dateTime: ref(''),
       authStore,
       notes,
-      $q,
+      quasar,
     }
   }
 }

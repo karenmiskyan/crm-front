@@ -4,7 +4,7 @@
     <q-list v-if="attachments.length" bordered separator>
       <q-item v-bind:key="attachment.id" v-for="attachment of attachments">
         <q-item-section>
-          <a :href="API_URL + attachment.file_url" target="_blank">{{ attachment.file_name }}</a>
+          <a :href="API_URL + attachment.file_path" target="_blank">{{ attachment.file_name }}</a>
         </q-item-section>
         <q-item-section side>{{ moment(attachment.created_at).format('YYYY-MM-D / h:mm:ss a') }}</q-item-section>
       </q-item>
@@ -23,16 +23,14 @@
 
 </template>
 <script>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {api} from "boot/axios";
 import {useAuthStore} from "stores/auth";
 import {useQuasar} from "quasar";
 import moment from "moment";
+import {useLeadReviewStore} from "stores/lead_review";
 
 export default {
-  props: {
-    lead: Object
-  },
   methods: {
     uploadFile() {
       const formData = new FormData();
@@ -44,8 +42,8 @@ export default {
 
       formData.append('attachment', this.attachedFile);
 
-      api.post(`/api/leads/${this.lead.id}/attachments`, formData, {headers}).then((response) => {
-        this.$q.notify({
+      api.post(`/api/leads/${this.reviewingLead.id}/attachments`, formData, {headers}).then((response) => {
+        this.quasar.notify({
           message: 'Attachment created successfully',
           position: 'bottom-right',
           actions: [{icon: 'close', color: 'white'}],
@@ -56,11 +54,13 @@ export default {
       })
     },
   },
-  setup(props) {
+  setup() {
     const authStore = useAuthStore();
+    const leadReviewStore = useLeadReviewStore();
+    const reviewingLead = leadReviewStore.reviewingLead;
     const attachedFile = ref(null)
-    const $q = useQuasar();
-    const attachments = ref(props.lead.attachments)
+    const quasar = useQuasar();
+    const attachments = computed(() => leadReviewStore.reviewingLead.attachments)
     const API_URL = process.env.API_URL
     return {
       authStore,
@@ -68,7 +68,8 @@ export default {
       attachments,
       moment,
       API_URL,
-      $q
+      quasar,
+      reviewingLead
     }
   }
 }

@@ -64,8 +64,3 @@ export const useLeadsStore = defineStore('leads', {
     },
   }
 })
-
-const filterStore = useLeadsStore();
-filterStore.$subscribe((mutation, state) => {
-  // filterStore.request()
-})

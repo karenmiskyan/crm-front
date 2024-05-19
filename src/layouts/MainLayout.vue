@@ -65,11 +65,21 @@
                   <q-item-label header>Notifications</q-item-label>
 
                   <template v-bind:key="notif.id" v-for="notif of notifications">
-                    <q-item clickable v-ripple>
+                    <q-separator/>
+                    <q-item clickable v-ripple @click="showLeadInfo(notif.lead_id)">
+                      <q-item-section avatar>
+                        <q-btn
+                          color="primary"
+                          flat round
+                          icon="drafts"
+                          size="xs"
+                        />
+                      </q-item-section>
                       <q-item-section>
+
                         <q-item-label lines="1">
                           <span class="notif-content">
-                            {{ notif.change_info }} for {{ notif.lead.company }}
+                            {{ notif.change_info }}: {{ notif.lead_name }}
                           </span>
                         </q-item-label>
                         <q-item-label caption lines="2">
@@ -80,11 +90,10 @@
                       </q-item-section>
 
                       <q-item-section side top>
-                        {{ moment(notif.created_at).fromNow() }}
+                        <span class="text-caption">{{moment(notif.created_at).fromNow()}}</span>
                       </q-item-section>
                     </q-item>
 
-                    <q-separator/>
                   </template>
 
                 </q-list>
@@ -160,6 +169,7 @@ import Filter from "components/leads/Filter.vue";
 import {useLeadsStore} from "stores/leads";
 import moment from 'moment'
 import {useCommonStore} from "stores/common";
+import {useLeadReviewStore} from "stores/lead_review";
 
 export default {
   name: 'MyLayout',
@@ -172,8 +182,9 @@ export default {
     const authStore = useAuthStore()
     const filterStore = useLeadsStore()
     const commonStore = useCommonStore()
+    const leadReviewStore = useLeadReviewStore()
     const roles = authStore.user?.roles?.map(role => role.name)
-    const users = commonStore.assigneeOptions
+    const users = computed(() => commonStore.assigneeOptions)
     const user = authStore.user;
     const notifications = ref([]);
 
@@ -181,6 +192,10 @@ export default {
       get: () => filterStore.openFilterSidebar,
       set: (value) => filterStore.openFilterSidebar = value
     })
+
+    function showLeadInfo(leadId) {
+      leadReviewStore.editLead(leadId)
+    }
 
     function toggleLeftDrawer() {
       leftDrawerOpen.value = !leftDrawerOpen.value
@@ -194,9 +209,9 @@ export default {
       Authorization: `Bearer ${authStore.token}`
     }
 
-    // api.get('api/activities', {headers}).then(response => {
-    //   notifications.value = response.data.activities && response.data.activities.length ? response.data.activities.slice(0, 5) : [];
-    // });
+    api.get('api/unread-events', {headers}).then(response => {
+      notifications.value = response.data.unreadEvents && response.data.unreadEvents.length ? response.data.unreadEvents.slice(0, 5) : [];
+    });
 
     return {
       leftDrawerOpen,
@@ -211,6 +226,7 @@ export default {
       ],
       isFilterSidebarOpen,
       toggleLeftDrawer,
+      showLeadInfo,
       logout,
       roles
     }

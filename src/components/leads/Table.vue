@@ -18,16 +18,16 @@
       @update:selected="$emit('table-selected', selectedLeads)"
     >
       <template v-slot:loading>
-        <q-inner-loading style="z-index: 5" showing color="primary" />
+        <q-inner-loading style="z-index: 5" showing color="primary"/>
       </template>
       <template v-slot:body-cell-actions="scope">
         <q-td auto-width>
-          <q-btn flat round color="dark" icon="remove_red_eye" @click="editLead(scope.row)"/>
+          <q-btn flat round color="dark" icon="remove_red_eye" @click="editLead(scope.row.id)"/>
         </q-td>
       </template>
       <template v-slot:body-cell-company="scope">
         <q-td auto-width>
-          <span class="cursor-pointer" @click="editLead(scope.row)">{{scope.row.company}}</span>
+          <span class="cursor-pointer" @click="editLead(scope.row.id)">{{ scope.row.company }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-created_by="scope">
@@ -37,7 +37,9 @@
       </template>
       <template v-slot:body-cell-phone="scope">
         <q-td auto-width>
-          <a v-if="scope.row.phone_number.length > 2" :href="`tel:${scope.row.phone_number}`">{{ scope.row.phone_number }}</a>
+          <a v-if="scope.row.phone_number.length > 2" :href="`tel:${scope.row.phone_number}`">{{
+              scope.row.phone_number
+            }}</a>
           <span v-else>N/A</span>
         </q-td>
       </template>
@@ -54,7 +56,8 @@
       <template v-slot:body-cell-status="scope">
         <q-td auto-width>
           <span v-if="scope.row.status && scope.row.status.length">
-            <q-chip style="font-weight: bold" :text-color="statusColors[scope.row.status] ? 'white' : 'black'" :color="statusColors[scope.row.status]">{{
+            <q-chip style="font-weight: bold" :text-color="statusColors[scope.row.status] ? 'white' : 'black'"
+                    :color="statusColors[scope.row.status]">{{
                 scope.row.status
               }}</q-chip>
           </span>
@@ -77,6 +80,7 @@ import {computed, onMounted, provide, ref, watch} from 'vue'
 import {api} from "boot/axios";
 import {useAuthStore} from "stores/auth";
 import {useCommonStore} from "stores/common";
+import {useLeadReviewStore} from "stores/lead_review";
 import moment from 'moment'
 import ReviewForm from "components/leads/ReviewForm.vue";
 import {mapState, storeToRefs} from "pinia";
@@ -152,27 +156,16 @@ export default {
   methods: {
     async onRequest(props) {
       const {page, rowsPerPage, sortBy, descending} = props.pagination
-      this.leadsStore.isLoading = true
+      this.loading = true
       const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage
       this.leadsStore.request(page, fetchCount)
       this.pagination.page = page
       this.pagination.rowsPerPage = rowsPerPage
       this.pagination.sortBy = sortBy
       this.pagination.descending = descending
-
-      this.loading = false
     },
-    editLead(lead) {
-      const headers = {
-        Authorization: `Bearer ${this.authStore.token}`
-      }
-
-      api.get(`api/leads/${lead.id}`, {headers}).then((response) => {
-        this.isModalOpen = true;
-        this.editLeadObject = response.data
-
-        this.commonStore.updateReviewingLead(response.data);
-      })
+    editLead(leadId) {
+      this.leadReviewStore.editLead(leadId)
     },
   },
   props: {
@@ -180,10 +173,17 @@ export default {
   },
   setup() {
     const editLeadObject = ref(null);
-    const isModalOpen = ref(false)
     const authStore = useAuthStore();
     const commonStore = useCommonStore();
+    const leadReviewStore = useLeadReviewStore();
     const leadsStore = useLeadsStore();
+
+    const isModalOpen = computed({
+      get: () => leadReviewStore.isModalOpen,
+      set: (value) => {
+        leadReviewStore.isModalOpen = value
+      },
+    })
 
     const leadRows = computed(() => leadsStore.leads)
 
@@ -194,11 +194,15 @@ export default {
 
     const assigneeOptions = ref(computed(() => commonStore.assigneeOptions));
 
-    const rows = computed(() => commonStore.leads)
-
     const leadsTable = ref()
 
-    const loading = computed(() => leadsStore.isLoading)
+    const loading = computed({
+      get: () => leadsStore.isLoading,
+      set: (value) => {
+        console.log('is loading', value)
+        leadsStore.isLoading = value
+      }
+    })
 
     const pagination = ref({
       sortBy: 'desc',
@@ -210,7 +214,7 @@ export default {
 
     watch(() => (leadsStore.total), (newValue, oldValue) => {
       pagination.value.rowsNumber = newValue
-    }, { deep: true });
+    }, {deep: true});
 
     function reFetch() {
       leadsTable.value.requestServerInteraction()
@@ -235,6 +239,7 @@ export default {
       columns,
       authStore,
       commonStore,
+      leadReviewStore,
       leadsTable,
       loading,
       pagination,
@@ -244,7 +249,7 @@ export default {
       statusColors,
       leadsStore,
       getSelectedString() {
-        return selectedLeads.value.length === 0 ? '' : `${selectedLeads.value.length} record${selectedLeads.value.length > 1 ? 's' : ''} selected of ${rows.value.length}`
+        return selectedLeads.value.length === 0 ? '' : `${selectedLeads.value.length} record${selectedLeads.value.length > 1 ? 's' : ''} selected of ${leadRows.value.length}`
       }
     }
   }
