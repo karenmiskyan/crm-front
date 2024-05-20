@@ -44,7 +44,7 @@
 
         <div class="q-gutter-sm row items-center no-wrap">
           <q-btn no-caps flat>
-            <span>Welcome {{user.name}}</span>
+            <span>Welcome {{ user.name }}</span>
             <q-tooltip>Account</q-tooltip>
             <q-menu persistent auto-close>
               <q-list style="min-width: 100px">
@@ -62,39 +62,67 @@
             <q-menu max-height="300px" no-shadow>
               <div class="q-gutter-md">
                 <q-list bordered class="rounded-borders" style="min-width: 400px; max-width: 400px">
-                  <q-item-label header>Notifications</q-item-label>
+                  <q-item-label header>
+                    <div class="flex items-center justify-between">
+                      <span class="non-selectable">Notifications</span>
+                      <span>
+                        <q-btn :disable="!notifications.length" icon-right="drafts" no-caps dense ripple color="dark"
+                               @click="markAsRead()" flat size="sm">
+                          <span class="q-px-sm" style="position: relative; right: 3px">Mark all as read</span>
+                        </q-btn>
+                      </span>
+                    </div>
+                  </q-item-label>
 
-                  <template v-bind:key="notif.id" v-for="notif of notifications">
-                    <q-separator/>
-                    <q-item clickable v-ripple @click="showLeadInfo(notif.lead_id)">
-                      <q-item-section avatar>
-                        <q-btn
-                          color="primary"
-                          flat round
-                          icon="drafts"
-                          size="xs"
-                        />
-                      </q-item-section>
-                      <q-item-section>
+                  <div v-if="notifications.length">
+                    <template v-bind:key="notif.id" v-for="notif of notifications">
+                      <q-separator/>
+                      <q-item
+                        active-class="read-notification"
+                        :active="notif.isRead"
+                        clickable
+                        v-ripple
+                        style="color: black"
+                        @click="showLeadInfo(notif.lead_id)"
+                      >
+                        <q-item-section avatar>
+                          <q-btn
+                            @click.stop.prevent="markAsRead(notif.id)"
+                            :disable="notif.isRead"
+                            color="dark"
+                            flat round
+                            icon="drafts"
+                            size="xs"
+                          />
+                        </q-item-section>
+                        <q-item-section>
 
-                        <q-item-label lines="1">
+                          <q-item-label lines="1">
                           <span class="notif-content">
                             {{ notif.change_info }}: {{ notif.lead_name }}
                           </span>
-                        </q-item-label>
-                        <q-item-label caption lines="2">
+                          </q-item-label>
+                          <q-item-label caption lines="2">
                           <span class="text-weight-bold">{{
                               users.find(item => item.id === notif.user_id)?.name
                             }}</span>
-                        </q-item-label>
-                      </q-item-section>
+                          </q-item-label>
+                        </q-item-section>
 
-                      <q-item-section side top>
-                        <span class="text-caption">{{moment(notif.created_at).fromNow()}}</span>
+                        <q-item-section side top>
+                          <span class="text-caption">{{ moment(notif.created_at).fromNow() }}</span>
+                        </q-item-section>
+                      </q-item>
+
+                    </template>
+                  </div>
+                  <div v-else>
+                    <q-item>
+                      <q-item-section>
+                        <span class="text-dark text-caption non-selectable">There is no any notification</span>
                       </q-item-section>
                     </q-item>
-
-                  </template>
+                  </div>
 
                 </q-list>
               </div>
@@ -193,6 +221,14 @@ export default {
       set: (value) => filterStore.openFilterSidebar = value
     })
 
+    const headers = {
+      Authorization: `Bearer ${authStore.token}`
+    }
+
+    api.get('api/unread-events', {headers}).then(response => {
+      notifications.value = response.data.unreadEvents && response.data.unreadEvents.length ? response.data.unreadEvents : [];
+    });
+
     function showLeadInfo(leadId) {
       leadReviewStore.editLead(leadId)
     }
@@ -201,17 +237,30 @@ export default {
       leftDrawerOpen.value = !leftDrawerOpen.value
     }
 
+    function markAsRead(notifId = undefined) {
+      const headers = {
+        Authorization: `Bearer ${authStore.token}`
+      }
+
+      let url = 'api/mark-all-read/'
+
+      if (notifId) {
+        url += notifId
+        const index = notifications.value.findIndex(notif => notif.id === notifId)
+        notifications.value[index]['isRead'] = true;
+      } else {
+        notifications.value.forEach(item => {
+          item['isRead'] = true
+        })
+      }
+
+      api.post(url, {}, {headers}).then(response => {
+      });
+    }
+
     function logout() {
       authStore.clearToken()
     }
-
-    const headers = {
-      Authorization: `Bearer ${authStore.token}`
-    }
-
-    api.get('api/unread-events', {headers}).then(response => {
-      notifications.value = response.data.unreadEvents && response.data.unreadEvents.length ? response.data.unreadEvents.slice(0, 5) : [];
-    });
 
     return {
       leftDrawerOpen,
@@ -227,6 +276,7 @@ export default {
       isFilterSidebarOpen,
       toggleLeftDrawer,
       showLeadInfo,
+      markAsRead,
       logout,
       roles
     }
@@ -257,4 +307,10 @@ export default {
 
     &:hover
       color: #000
+</style>
+
+<style lang="scss">
+.read-notification {
+  background-color: #e8e8e8;
+}
 </style>
