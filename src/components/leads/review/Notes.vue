@@ -81,6 +81,7 @@ export default {
     const authStore = useAuthStore()
     const leadReviewStore = useLeadReviewStore()
     const quasar = useQuasar()
+    const lead = leadReviewStore.reviewingLead;
 
     const notes = leadReviewStore.reviewingLead.notes
 
@@ -88,6 +89,7 @@ export default {
       note: ref(''),
       dateTime: ref(''),
       authStore,
+      lead,
       notes,
       quasar,
     }
