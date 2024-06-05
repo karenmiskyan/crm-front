@@ -4,7 +4,7 @@
     @hide="closed"
     full-height
   >
-    <q-card class="full-height" style="width: 950px; max-width: 90vw;">
+    <q-card class="full-height" style="width: 1050px; max-width: 90vw;">
       <q-card-section>
         <div class="flex justify-between text-h6">
           <span>Review</span>
@@ -24,6 +24,7 @@
           <q-tab name="attachments" icon="attach_file" label="Attachments"/>
           <q-tab name="transactions" icon="assignment_add" label="Transactions"/>
           <q-tab name="email" icon="email" label="Send Email"/>
+          <q-tab name="merge" icon="merge" label="Merge"/>
           <q-tab name="edit" icon="edit" label="Edit"/>
         </q-tabs>
         <q-tab-panels v-model="tab" animated>
@@ -51,6 +52,10 @@
             <email-tab></email-tab>
           </q-tab-panel>
 
+          <q-tab-panel name="merge">
+            <merge-tab :lead="lead"></merge-tab>
+          </q-tab-panel>
+
           <q-tab-panel name="edit">
             <edit-tab></edit-tab>
           </q-tab-panel>
@@ -69,6 +74,7 @@ import Profile from "components/leads/review/Profile.vue";
 import Notes from "components/leads/review/Notes.vue";
 import Attachments from "components/leads/review/Attachments.vue";
 import Email from "components/leads/review/Email.vue";
+import Merge from "components/leads/review/Merge.vue";
 import Edit from "components/leads/review/Edit.vue";
 import Activities from "components/leads/review/Activities.vue";
 import Transactions from "components/leads/review/Transactions.vue";
@@ -84,6 +90,7 @@ export default {
     'attachments-tab': Attachments,
     'email-tab': Email,
     'edit-tab': Edit,
+    'merge-tab': Merge,
     'activities-tab': Activities,
     'transactions-tab': Transactions,
   },
