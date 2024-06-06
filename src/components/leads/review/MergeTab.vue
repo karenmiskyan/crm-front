@@ -18,7 +18,7 @@
       <div v-if="showDropdown && filteredLeads.length > 0" class="dropdown">
         <ul>
           <li v-for="lead in filteredLeads" :key="lead.id" @mousedown="leadSelected(lead)">
-            {{ lead.name }}
+            {{ lead.company }}
           </li>
         </ul>
       </div>
@@ -29,7 +29,7 @@
     <div class="text-h6">Merged leads</div>
     <div class="q-py-md q-gutter-sm">
       <ul>
-        <li v-for="child in localChildren" :key="child.id">Name: {{ child.name }}</li>
+        <li v-for="child in localChildren" :key="child.id">Company: {{ child.company }}</li>
       </ul>
     </div>
   </q-tab-panel>
