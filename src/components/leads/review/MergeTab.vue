@@ -95,7 +95,7 @@ export default {
 
     const leadSelected = (lead) => {
       selectedLead.value = lead;
-      generalSearch.value = lead.name;
+      generalSearch.value = lead.company;
       showDropdown.value = false; // Hide dropdown after selecting
     };
 
