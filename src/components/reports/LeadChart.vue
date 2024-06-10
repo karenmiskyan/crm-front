@@ -81,7 +81,7 @@ export default defineComponent({
       const headers = {
         Authorization: `Bearer ${this.authStore.token}`
       }
-      api.get(`/api/lead_charts?startDate=${this.dateFrom || ''}&endDate=${this.dateTo || ''}&user_id=${this.assignee ? this.assignee?.id : ''}`, {headers}).then(response => {
+      api.get(`/api/lead_charts?startDate=${this.dateFrom.split('/').join('-') || ''}&endDate=${this.dateTo.split('/').join('-') || ''}&user_id=${this.assignee ? this.assignee?.id : ''}`, {headers}).then(response => {
         this.options['xaxis']['categories'] = response.data.labels
 
         if (!this.assignee) {
@@ -113,7 +113,7 @@ export default defineComponent({
       }
 
       try {
-        const response = await api.get(`/api/lead_charts?export=true&startDate=${this.dateFrom || ''}&endDate=${this.dateTo || ''}`, {
+        const response = await api.get(`/api/lead_charts?export=true&startDate=${this.dateFrom.split('/').join('-') || ''}&endDate=${this.dateTo.split('/').join('-') || ''}&user_id=${this.assignee ? this.assignee?.id : ''}`, {
           headers,
           responseType: 'arraybuffer',
         });

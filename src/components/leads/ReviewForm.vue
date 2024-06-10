@@ -24,7 +24,7 @@
           <q-tab name="attachments" icon="attach_file" label="Attachments"/>
           <q-tab name="transactions" icon="assignment_add" label="Transactions"/>
           <q-tab name="email" icon="email" label="Send Email"/>
-          <q-tab name="merge" icon="merge" label="Merge"/>
+          <q-tab name="merge" icon="merge" label="Merge" v-if="checkPermission(authStore.roles, 'admin')"/>
           <q-tab name="edit" icon="edit" label="Edit"/>
         </q-tabs>
         <q-tab-panels v-model="tab" animated>
@@ -82,6 +82,7 @@ import {computed, ref} from "vue";
 import {api} from "boot/axios";
 import {useAuthStore} from "stores/auth";
 import {useLeadReviewStore} from "stores/lead_review";
+import {checkPermission, objectToQueryString} from "src/common/utils";
 
 export default {
   components: {
@@ -104,6 +105,7 @@ export default {
     }
   },
   methods: {
+    checkPermission,
     closed() {
       this.$emit('modal-closed')
     },
