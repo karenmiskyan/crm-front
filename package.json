@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
-    "post-build": "rm -rf ../crm.koaedi.com/* && mv dist/spa/* ../crm.koaedi.com/",
+    "post-build": "rm -rf ../new-crm/* && mv dist/spa/* ../new-crm/",
     "build": "quasar build && yarn post-build"
   },
   "dependencies": {
