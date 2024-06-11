@@ -11,7 +11,7 @@
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
     "post-build": "rm -rf ../new-crm/* && mv dist/spa/* ../new-crm/",
-    "build": "quasar build && yarn post-build"
+    "build": "quasar build && npm run post-build"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",
