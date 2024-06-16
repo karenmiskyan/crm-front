@@ -30,6 +30,11 @@
           <span class="cursor-pointer" @click="editLead(scope.row.id)">{{ scope.row.company }}</span>
         </q-td>
       </template>
+      <template v-slot:body-cell-assigned_id="scope">
+        <q-td auto-width>
+          {{ assigneeOptions.find(item => item.id === scope.row.assigned_id)?.name }}
+        </q-td>
+      </template>
       <template v-slot:body-cell-created_by="scope">
         <q-td auto-width>
           {{ assigneeOptions.find(item => item.id === scope.row.created_by).name }}
@@ -112,6 +117,7 @@ const columns = [
     name: 'tags', label: 'Tags', align: 'left', field: row => row.tags,
   },
   {name: 'phone', label: 'Phone', align: 'left', field: 'phone_number'},
+  {name: 'assigned_id', label: 'Assigned To', align: 'left', field: 'assigned_id'},
   {name: 'created_by', label: 'Created By', align: 'left', field: 'created_by'},
   {
     name: 'contact_date',

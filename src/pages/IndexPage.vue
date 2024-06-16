@@ -11,10 +11,10 @@
         </div>
         <div class="action-buttons">
           <div class="q-py-md q-gutter-sm">
-            <q-btn @click="bulkExportFiltered" :loading="exportLoading" v-if="checkPermission(authStore.roles, 'admin')"
+            <!-- <q-btn @click="bulkExportFiltered" :loading="exportLoading" v-if="checkPermission(authStore.roles, 'admin')"
                    label="Export" color="dark" unelevated icon="open_in_new">
               <q-tooltip :delay="1000" :offset="[0, 10]">Export</q-tooltip>
-            </q-btn>
+            </q-btn> -->
             <q-btn-group outline>
               <q-btn color="dark" @click="openFilterSidebar = !openFilterSidebar" text-color="white" label="Filter"
                      unelevated icon="tune"></q-btn>

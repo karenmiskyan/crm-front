@@ -53,7 +53,7 @@ export default {
     const leadReviewStore = useLeadReviewStore()
     const transactions = ref([]);
     if (leadReviewStore.reviewingLead.eclipse_customer_id) {
-      api.get(`https://api.koaedi.com/api/account-histories-api/${props.lead.eclipse_customer_id}`).then((response) => {
+      api.get(`https://api.koaedi.com/api/account-histories-api/${leadReviewStore.reviewingLead.eclipse_customer_id}`).then((response) => {
         transactions.value = response.data
       })
     }
