@@ -15,6 +15,16 @@
                    label="Export" color="dark" unelevated icon="open_in_new">
               <q-tooltip :delay="1000" :offset="[0, 10]">Export</q-tooltip>
             </q-btn> -->
+            <!-- <q-btn @click="filterInactiveLeads" :loading="exportLoading" v-if="checkPermission(authStore.roles, 'admin')"
+                   label="Export" color="dark" unelevated icon="open_in_new">
+              <q-tooltip :delay="1000" :offset="[0, 10]">Export</q-tooltip>
+            </q-btn> -->
+
+            <q-btn-group outline>
+              <q-btn color="dark" @click="openInactiveFilterSidebar = !openInactiveFilterSidebar" text-color="white" label="Filter Inactive"
+                     unelevated icon="tune"></q-btn>
+            </q-btn-group>
+
             <q-btn-group outline>
               <q-btn color="dark" @click="openFilterSidebar = !openFilterSidebar" text-color="white" label="Filter"
                      unelevated icon="tune"></q-btn>
@@ -132,6 +142,9 @@ export default {
       }).onDismiss(() => {
         // console.log('I am triggered on both OK and Cancel')
       })
+    },
+    filterInactiveLeads() {
+      this.leadsStore.filter.filter_inactive = !this.leadsStore.filter.filter_inactive
     }
   },
   setup() {
@@ -154,6 +167,11 @@ export default {
     const openFilterSidebar = computed({
       get: () => leadsStore.openFilterSidebar,
       set: (value) => leadsStore.openFilterSidebar = value,
+    })
+    const openInactiveFilterSidebar = computed({
+
+      get: () => leadsStore.openInactiveFilterSidebar,
+      set: (value) => leadsStore.openInactiveFilterSidebar = value,
     })
 
     const filter_general = computed({
@@ -183,6 +201,7 @@ export default {
       filter_general,
       leadsStore,
       openFilterSidebar,
+      openInactiveFilterSidebar,
     }
   }
 };

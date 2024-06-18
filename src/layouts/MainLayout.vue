@@ -183,6 +183,22 @@
       </q-scroll-area>
     </q-drawer>
 
+    <q-drawer
+      v-model="isInactiveFilterSidebarOpen"
+      side="right"
+      overlay
+      behavior="desktop"
+      bordered
+      class="bg-grey-2"
+      :width="300"
+    >
+      <q-scroll-area class="fit">
+        <div class="q-pa-sm">
+          <filter-inactive-component></filter-inactive-component>
+        </div>
+      </q-scroll-area>
+    </q-drawer>
+
     <q-page-container>
       <router-view/>
     </q-page-container>
@@ -194,6 +210,7 @@ import {computed, ref} from 'vue'
 import {useAuthStore} from "stores/auth";
 import {api} from "boot/axios";
 import Filter from "components/leads/Filter.vue";
+import FilterInactive from "components/leads/FilterInactive.vue";
 import {useLeadsStore} from "stores/leads";
 import moment from 'moment'
 import {useCommonStore} from "stores/common";
@@ -202,7 +219,8 @@ import {useLeadReviewStore} from "stores/lead_review";
 export default {
   name: 'MyLayout',
   components: {
-    'filter-component': Filter
+    'filter-component': Filter,
+    'filter-inactive-component': FilterInactive
   },
   setup() {
     const leftDrawerOpen = ref(false)
@@ -219,6 +237,10 @@ export default {
     const isFilterSidebarOpen = computed({
       get: () => filterStore.openFilterSidebar,
       set: (value) => filterStore.openFilterSidebar = value
+    })
+    const isInactiveFilterSidebarOpen = computed({
+      get: () => filterStore.openInactiveFilterSidebar,
+      set: (value) => filterStore.openInactiveFilterSidebar = value
     })
 
     const headers = {
@@ -274,6 +296,7 @@ export default {
         {icon: 'group_add', text: 'leads', route: 'leads', guards: ['agent', 'manager', 'admin']},
       ],
       isFilterSidebarOpen,
+      isInactiveFilterSidebarOpen,
       toggleLeftDrawer,
       showLeadInfo,
       markAsRead,

@@ -7,9 +7,11 @@ import {objectToQueryString} from "src/common/utils";
 export const useLeadsStore = defineStore('leads', {
   state: () => ({
     openFilterSidebar: false,
+    openInactiveFilterSidebar: false,
     filter: {
       filter_contact_date: '',
       filter_created_by: '',
+      filter_inactive: '',
       filter_created_at_from: '',
       filter_created_at_to: '',
       filter_general: '',
