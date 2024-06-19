@@ -21,7 +21,7 @@
             </q-btn> -->
 
             <q-btn-group outline>
-              <q-btn color="dark" @click="openInactiveFilterSidebar = !openInactiveFilterSidebar" text-color="white" label="Filter Inactive"
+              <q-btn color="dark" @click="openInactiveFilterSidebar = !openInactiveFilterSidebar" text-color="white" label="Inactive Filter"
                      unelevated icon="tune"></q-btn>
             </q-btn-group>
 
