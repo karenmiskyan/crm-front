@@ -21,7 +21,7 @@
             </q-btn> -->
 
             <q-btn-group outline>
-              <q-btn color="dark" @click="openInactiveFilterSidebar = !openInactiveFilterSidebar" text-color="white" label="Inactive Filter"
+              <q-btn color="dark" @click="openInactiveFilterSidebar = !openInactiveFilterSidebar" v-if="checkPermission(authStore.roles, 'admin')"  text-color="white" label="Inactive Filter"
                      unelevated icon="tune"></q-btn>
             </q-btn-group>
 
