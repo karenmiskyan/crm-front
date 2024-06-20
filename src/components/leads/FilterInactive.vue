@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <div>
       <span class="closing-button">
-        <q-icon color="blue-grey-3" @click="openFilterSidebar = !openFilterSidebar" size="md" name="trending_flat"/>
+        <q-icon color="blue-grey-3" @click="openInactiveFilterSidebar = !openInactiveFilterSidebar" size="md" name="trending_flat"/>
       </span>
     </div>
     <div class="q-pa-md">
@@ -34,9 +34,9 @@ const leadsStore = useLeadsStore();
 const authStore = useAuthStore();
 
 const roles = authStore.user?.roles.map(item => item.name)
-const openFilterSidebar = computed({
-  get: () => leadsStore.openFilterSidebar,
-  set: (value) => leadsStore.openFilterSidebar = value,
+const openInactiveFilterSidebar = computed({
+  get: () => leadsStore.openInactiveFilterSidebar,
+  set: (value) => leadsStore.openInactiveFilterSidebar = value,
 })
 
 const inactiveDateOptions = computed(() => ['', '3 mounts', '6 mounts', '1 year', 'no order'])
