@@ -39,7 +39,7 @@ const openInactiveFilterSidebar = computed({
   set: (value) => leadsStore.openInactiveFilterSidebar = value,
 })
 
-const inactiveDateOptions = computed(() => ['', '3 mounts', '6 mounts', '1 year', 'no order'])
+const inactiveDateOptions = computed(() => ['', '30 days', '3 months', '6 months', '1 year', 'no order'])
 
 const inactiveDate = computed({
   get: () =>  leadsStore.filter.filter_inactive || null ,

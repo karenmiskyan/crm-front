@@ -114,11 +114,11 @@ const columns = [
   },
   {name: 'eclipse_customer_id', align: 'left', label: 'Customer ID', field: 'eclipse_customer_id', sortable: true},
   {
-    name: 'tags', label: 'Tags', align: 'left', field: row => row.tags,
+    name: 'tags', label: 'Tags', align: 'left', field: row => row.tags, sortable: true
   },
-  {name: 'phone', label: 'Phone', align: 'left', field: 'phone_number'},
+  {name: 'phone', label: 'Phone', align: 'left', field: 'phone_number', sortable: true},
   {name: 'assigned_id', label: 'Assigned To', align: 'left', field: 'assigned_id'},
-  {name: 'created_by', label: 'Created By', align: 'left', field: 'created_by'},
+  {name: 'created_by', label: 'Created By', align: 'left', field: 'created_by', sortable: true},
   {
     name: 'contact_date',
     align: 'left',
@@ -164,7 +164,10 @@ export default {
       const {page, rowsPerPage, sortBy, descending} = props.pagination
       this.loading = true
       const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage
-      this.leadsStore.request(page, fetchCount)
+      
+      // Here, ensure you pass the sorting parameters to your API request
+      this.leadsStore.request(page, fetchCount, sortBy, descending)
+      
       this.pagination.page = page
       this.pagination.rowsPerPage = rowsPerPage
       this.pagination.sortBy = sortBy
@@ -211,7 +214,7 @@ export default {
     })
 
     const pagination = ref({
-      sortBy: 'desc',
+      sortBy: 'created_at',
       descending: false,
       page: 1,
       rowsPerPage: 20,

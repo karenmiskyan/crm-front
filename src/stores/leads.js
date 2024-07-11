@@ -27,7 +27,9 @@ export const useLeadsStore = defineStore('leads', {
   }),
   getters: {},
   actions: {
-    request(page, count) {
+    request(page, count, sortBy, descending) {
+      console.log(sortBy);
+      console.log(descending);
       const authStore = useAuthStore()
       const commonStore = useCommonStore()
       const queryString = objectToQueryString(this.filter);
@@ -35,7 +37,7 @@ export const useLeadsStore = defineStore('leads', {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authStore.token}`
       }
-      api.get(`/api/leads?page=${page}&per_page=${count}&${queryString}`, {headers}).then((response) => {
+      api.get(`/api/leads?page=${page}&per_page=${count}&${queryString}&sort_by=${sortBy}&sort_order=${descending ? 'asc' : 'desc'}`, {headers}).then((response) => {
         const data = response.data;
         commonStore.updateStatusOptions(data.statusOptions);
         commonStore.updateAssigneeOptions(data.users);
